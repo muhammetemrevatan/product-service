@@ -44,13 +44,13 @@ public class ProductRepositoryServiceImpl implements IProductRepositoryService {
     @Override
     public Product getProduct(Language language, Long productId) {
         log.debug("[{}][getProduct] -> request: {}",this.getClass().getSimpleName(), productId);
-        try {
-            Product productResponse = productRepository.getByProductIdAndDeletedFalse(productId);
-            log.debug("[{}][getProduct] -> request: {}",this.getClass().getSimpleName(), productId);
-            return productResponse;
-        } catch (Exception e) {
+        // FIXME oldu ki birden fazla product döndü hata almazmısın kontrol edilmeli. repository'e findFirstBy eklendi.
+        Product productResponse = productRepository.findFirstByProductIdAndDeletedFalse(productId);
+        if(Objects.isNull(productResponse)) {
             throw new ProductNotFoundException(language, FriendlyMessageCodes.PRODUCT_NOT_FOUND_EXCEPTION, "product request: " + productId);
         }
+        log.debug("[{}][getProduct] -> request: {}",this.getClass().getSimpleName(), productId);
+        return productResponse;
     }
 
     @Override
