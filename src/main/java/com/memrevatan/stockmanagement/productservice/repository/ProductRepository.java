@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Product getByProductIdAndDeletedFalse(Long productId); // deleted alanı false olmalı çünkü 
+    Product findFirstByProductIdAndDeletedFalse(Long productId); // deleted alanı false olmalı çünkü
     List<Product> getAllByDeletedFalse();
 }
