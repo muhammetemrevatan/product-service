@@ -1,7 +1,6 @@
 package com.memrevatan.stockmanagement.productservice.exception.exceptions;
 
 import com.memrevatan.stockmanagement.productservice.enums.Language;
-import com.memrevatan.stockmanagement.productservice.exception.enums.FriendlyMessageCodes;
 import com.memrevatan.stockmanagement.productservice.exception.enums.IFriendlyMessageCode;
 import com.memrevatan.stockmanagement.productservice.exception.utils.FriendlyMessageUtils;
 import lombok.Getter;
