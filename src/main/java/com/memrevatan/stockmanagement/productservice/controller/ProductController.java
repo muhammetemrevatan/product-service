@@ -10,13 +10,20 @@ import com.memrevatan.stockmanagement.productservice.response.FriendlyMessage;
 import com.memrevatan.stockmanagement.productservice.response.InternalApiResponse;
 import com.memrevatan.stockmanagement.productservice.response.ProductResponse;
 import com.memrevatan.stockmanagement.productservice.service.IProductRepositoryService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +31,9 @@ import java.util.stream.Collectors;
 @RestController
 // RestFull web service olarak işlev gördüğünü belirtmek için kullanılır. // TYPE JSON OLUYOR request ve response json olarak belirleniyor. // REST yerine SOAP kullanılsaydı XML falan olabilir bir araştır bunu.
 @RequestMapping(value = "/api/1.0/product")
-// belirli bir url için yapılan istegi bir controller'a baglamak icin kullanabiliriz. Eger uygulama monolith olsaydı birden fazla controller olabilirdi ve her controller için farkılı requestmappingler verirdik.
+// belirli bir url için yapılan istegi bir controller'a baglamak icin kullanabiliriz. Eger uygulama monolith olsaydı birden fazla controller olabilirdi ve her controller için farklı requestmappingler verirdik.
 @RequiredArgsConstructor
+@Api(value = "Product Api Documentation")
 class ProductController {
     private final IProductRepositoryService productRepositoryService;
 
@@ -63,34 +71,36 @@ class ProductController {
         List<Product> products = productRepositoryService.getProducts(language);
         List<ProductResponse> productResponses = convertProductsResponse(products);
         log.debug("[{}][getProducts] -> response: {}", this.getClass().getSimpleName(), productResponses);
-        return InternalApiResponse.<List<ProductResponse>> builder().friendlyMessage(FriendlyMessage.builder()
-                        .title(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.SUCCESS))
-                        .description(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.PRODUCT_SUCCESSFULLY_GET))
-                        .build())
-                .httpStatus(HttpStatus.OK)
-                .hasError(false)
-                .payload(productResponses)
-                .build();
+        return InternalApiResponse.<List<ProductResponse>> builder().friendlyMessage(FriendlyMessage.builder().title(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.SUCCESS))
+                        .description(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.PRODUCT_SUCCESSFULLY_GET)).build()).httpStatus(HttpStatus.OK).hasError(false)
+                .payload(productResponses).build();
     }
 
     @ApiOperation(value = "This method updates the product")
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(value = "/{language}/productId")
+    @PostMapping(value = "/{language}/update/productId")
     public InternalApiResponse<ProductResponse> updateProduct(@PathVariable(value = "language") Language language, @RequestParam(value = "productId") Long productId,
             @RequestBody ProductUpdateRequest productUpdateRequest) {
         log.debug("[{}][updateProduct] -> request: {}", this.getClass().getSimpleName(), productUpdateRequest);
-        Product product = productRepositoryService.updateProduct(language,productId,productUpdateRequest);
+        Product product = productRepositoryService.updateProduct(language, productId, productUpdateRequest);
         ProductResponse productResponse = convertProductResponse(product);
         log.debug("[{}][updateProduct] -> response: {}", this.getClass().getSimpleName(), productUpdateRequest);
-        return InternalApiResponse.<ProductResponse>builder()
-                .friendlyMessage(FriendlyMessage.builder()
-                        .title(FriendlyMessageUtils.getFriendlyMessage(language,FriendlyMessageCodes.SUCCESS))
-                        .description(FriendlyMessageUtils.getFriendlyMessage(language,FriendlyMessageCodes.PRODUCT_SUCCESSFULLY_UPDATE))
-                        .build())
-                .httpStatus(HttpStatus.OK)
-                .hasError(false)
-                .payload(productResponse)
-                .build();
+        return InternalApiResponse.<ProductResponse> builder().friendlyMessage(FriendlyMessage.builder().title(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.SUCCESS))
+                        .description(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.PRODUCT_SUCCESSFULLY_UPDATE)).build()).httpStatus(HttpStatus.OK).hasError(false)
+                .payload(productResponse).build();
+    }
+
+    @ApiOperation(value = "This method deleted the product")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/{language}/delete/productId")
+    public InternalApiResponse<ProductResponse> deleteProduct(@PathVariable(value = "language") Language language, @RequestParam(value = "productId") Long productId) {
+        log.debug("[{}][updateProduct] -> request: productId {}", this.getClass().getSimpleName(), productId);
+        Product product = productRepositoryService.deleteProduct(language, productId);
+        ProductResponse productResponse = convertProductResponse(product);
+        log.debug("[{}][updateProduct] -> response: {}", this.getClass().getSimpleName(), productResponse);
+        return InternalApiResponse.<ProductResponse> builder().friendlyMessage(FriendlyMessage.builder().title(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.SUCCESS))
+                        .description(FriendlyMessageUtils.getFriendlyMessage(language, FriendlyMessageCodes.PRODUCT_SUCCESSFULLY_DELETE)).build()).httpStatus(HttpStatus.OK).hasError(false)
+                .payload(productResponse).build();
     }
 
     private List<ProductResponse> convertProductsResponse(List<Product> products) {
